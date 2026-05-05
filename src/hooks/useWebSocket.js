@@ -16,6 +16,16 @@ export function useWebSocket({ onMessage, onPresence, onError, enabled = true })
   const reconnectAttemptRef = useRef(0);
   const mountedRef = useRef(true);
 
+  const scheduleReconnect = useCallback(() => {
+    if (!mountedRef.current) return;
+    const delay = Math.min(
+      BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptRef.current),
+      MAX_RECONNECT_DELAY
+    );
+    reconnectAttemptRef.current++;
+    reconnectTimeoutRef.current = setTimeout(connect, delay);
+  }, []);
+
   const connect = useCallback(() => {
     if (!mountedRef.current || !enabled) return;
 
@@ -56,17 +66,7 @@ export function useWebSocket({ onMessage, onPresence, onError, enabled = true })
     } catch (e) {
       scheduleReconnect();
     }
-  }, [enabled, onMessage, onPresence, onError]);
-
-  const scheduleReconnect = useCallback(() => {
-    if (!mountedRef.current) return;
-    const delay = Math.min(
-      BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptRef.current),
-      MAX_RECONNECT_DELAY
-    );
-    reconnectAttemptRef.current++;
-    reconnectTimeoutRef.current = setTimeout(connect, delay);
-  }, [connect]);
+  }, [enabled, onMessage, onPresence, onError, scheduleReconnect]);
 
   const send = useCallback((data) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

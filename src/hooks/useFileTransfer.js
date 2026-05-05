@@ -113,6 +113,17 @@ export function useFileTransfer() {
     }
   }, []);
 
+  // ── Download file encrypted ──────────────────────────────────
+  const downloadFileEncrypted = useCallback(async (
+    fileId,
+    encryptedKeyBase64,
+    recipientPrivateKey,
+    originalName,
+    originalType,
+    onProgress
+  ) => {
+    const transferId = `download_${Date.now()}_${Math.random()}`;
+
     try {
       // Update state: downloading
       setTransfers(prev => new Map(prev).set(transferId, {

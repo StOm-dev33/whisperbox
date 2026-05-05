@@ -4,7 +4,7 @@
  * Public keys are stored on the server.
  */
 
-const KeyManager = (() => {
+(() => {
   const DB_NAME = 'whisperbox_keys';
   const DB_VERSION = 1;
   const STORE_NAME = 'keypairs';
