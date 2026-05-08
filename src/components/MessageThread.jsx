@@ -358,7 +358,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
       const deletePromises = Array.from(selectedMessages).map(async (messageId) => {
         const message = messages.find(m => m.id === messageId);
         if (!message) {
-          deletedIds.add(messageId);
+          failedIds.push(messageId);
           return;
         }
 
