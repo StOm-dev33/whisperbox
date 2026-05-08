@@ -64,6 +64,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
           parsed = candidate;
         }
       } catch {
+        // Plain text messages are expected to fail JSON parsing.
         parsed = null;
       }
     }
@@ -362,19 +363,15 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
     if (!confirmed) return;
 
     try {
-      const deletedIds = new Set();
-      const failedIds = [];
-
-      const deletePromises = Array.from(selectedMessages).map(async (messageId) => {
+      const results = await Promise.all(
+        Array.from(selectedMessages).map(async (messageId) => {
         const message = messages.find(m => m.id === messageId);
         if (!message) {
-          failedIds.push(messageId);
-          return;
+          return { messageId, success: false };
         }
 
         if (isOptimisticId(message.id)) {
-          deletedIds.add(messageId);
-          return;
+          return { messageId, success: true };
         }
 
         // Delete associated file if exists
@@ -390,14 +387,16 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         // Delete the message
         try {
           await deleteMessage(messageId);
-          deletedIds.add(messageId);
+          return { messageId, success: true };
         } catch (deleteErr) {
-          failedIds.push(messageId);
           console.error(`Failed to delete message ${messageId}:`, deleteErr);
+          return { messageId, success: false };
         }
-      });
+      })
+      );
 
-      await Promise.all(deletePromises);
+      const deletedIds = new Set(results.filter(r => r.success).map(r => r.messageId));
+      const failedIds = results.filter(r => !r.success).map(r => r.messageId);
 
       if (deletedIds.size > 0) {
         setMessages(prev => prev.filter(m => !deletedIds.has(m.id)));
