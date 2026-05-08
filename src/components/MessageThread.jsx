@@ -658,7 +658,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
             onKeyDown={handleKeyDown}
             placeholder="Message (end-to-end encrypted)"
             rows={1}
-            className="w-full px-4 py-3 rounded-2xl text-sm resize-none transition-all"
+            className="w-full px-5 py-4 rounded-2xl text-sm resize-none transition-all"
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
@@ -677,7 +677,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
             }}
           />
           <motion.div
-            className="absolute right-3 bottom-3"
+            className="absolute right-4 bottom-4"
             animate={{
               opacity: input.length > 0 ? 0.3 : 0.5,
             }}

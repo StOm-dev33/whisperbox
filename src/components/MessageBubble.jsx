@@ -80,7 +80,7 @@ export default function MessageBubble({ message, isSentByMe, onDownloadFile, isS
         transition={{ duration: 0.2 }}
       >
         <motion.div
-          className="px-6 py-4 rounded-2xl relative cursor-default transition-all"
+          className="px-7 py-5 rounded-2xl relative cursor-default transition-all"
           style={{
             background: isSentByMe ? 'var(--msg-sent)' : 'var(--msg-recv)',
             border: isSentByMe
