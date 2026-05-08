@@ -167,19 +167,18 @@ export default function MessageBubble({ message, isSentByMe, onDownloadFile, isS
               )}
 
               {/* Message text */}
-              {/* Message text */}
-{text && (
-  <div className="w-full overflow-hidden">
-    <p
-      className="text-base leading-6 px-1 py-1"
-      style={{
-        color: 'var(--text-primary)',
-        wordBreak: 'break-word',
-        overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap',
-        maxWidth: '100%',
-      }}
-    >
+              {text && (
+                <div className="w-full overflow-hidden">
+                  <p
+                    className="text-base leading-6 px-1 py-1"
+                    style={{
+                      color: 'var(--text-primary)',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                      maxWidth: '100%',
+                    }}
+                  >
       {text}
     </p>
   </div>
