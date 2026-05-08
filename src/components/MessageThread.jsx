@@ -14,6 +14,8 @@ import MessageGroup from './MessageGroup';
 import TypingIndicator from './TypingIndicator';
 import UploadProgress from './UploadProgress';
 
+const OPTIMISTIC_ID_PREFIX = 'opt_';
+
 export default function MessageThread({ recipient, sendMessageWS, isWSConnected, onBack }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -142,7 +144,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
 
       // Optimistic UI
       const optimistic = {
-        id: `opt_${Date.now()}`,
+        id: `${OPTIMISTIC_ID_PREFIX}${Date.now()}`,
         from_user_id: user.id,
         to_user_id: recipient.id,
         payload,
@@ -241,7 +243,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         );
 
         const optimistic = {
-          id: `opt_${Date.now()}`,
+          id: `${OPTIMISTIC_ID_PREFIX}${Date.now()}`,
           from_user_id: user.id,
           to_user_id: recipient.id,
           payload,
@@ -359,7 +361,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
           return;
         }
 
-        if (typeof message.id === 'string' && message.id.startsWith('opt_')) {
+        if (typeof message.id === 'string' && message.id.startsWith(OPTIMISTIC_ID_PREFIX)) {
           deletedIds.add(messageId);
           return;
         }
@@ -392,7 +394,11 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
       setSelectedMessages(new Set(failedIds));
 
       if (failedIds.length > 0) {
-        alert(`Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''}. Please try again.`);
+        const failedList = failedIds.slice(0, 3).join(', ');
+        const suffix = failedIds.length > 3 ? ', ...' : '';
+        alert(
+          `Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''} (${failedList}${suffix}). Please try again.`
+        );
       }
     } catch (err) {
       console.error('Delete error:', err);
