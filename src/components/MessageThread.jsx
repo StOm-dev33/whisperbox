@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Lock, ShieldCheck, ChevronDown, Loader2, ArrowLeft, Paperclip, FileUp, Trash2 } from 'lucide-react';
 import { getMessages, sendMessageRest, deleteMessage } from '../api/messages';
 import { deleteFile } from '../api/files';
-import { isReplayAttack } from '../crypto/encrypt';
+import { getUserPublicKey } from '../api/users';
+import { encryptMessage, isReplayAttack } from '../crypto/encrypt';
+import { decryptMessage } from '../crypto/decrypt';
 import { useAuthStore } from '../store/authStore';
 import { useFileTransfer } from '../hooks/useFileTransfer';
 import { groupMessages } from '../utils/messageGrouping';
@@ -11,6 +13,19 @@ import MessageBubble from './MessageBubble';
 import MessageGroup from './MessageGroup';
 import TypingIndicator from './TypingIndicator';
 import UploadProgress from './UploadProgress';
+
+const OPTIMISTIC_ID_PREFIX = 'opt_';
+
+function generateOptimisticMessageId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${OPTIMISTIC_ID_PREFIX}${crypto.randomUUID()}`;
+  }
+  return `${OPTIMISTIC_ID_PREFIX}${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function isOptimisticId(id) {
+  return typeof id === 'string' && id.startsWith(OPTIMISTIC_ID_PREFIX);
+}
 
 export default function MessageThread({ recipient, sendMessageWS, isWSConnected, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -41,9 +56,26 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
   const decryptOne = useCallback(async (msg) => {
     const isSentByMe = msg.from_user_id === user.id;
     const result = await decryptMessage(msg.payload, getPrivateKey(), isSentByMe);
+    let parsed = null;
+    if (result.success && result.text) {
+      try {
+        const candidate = JSON.parse(result.text);
+        if (candidate && typeof candidate === 'object') {
+          parsed = candidate;
+        }
+      } catch {
+        // Plain text messages are expected to fail JSON parsing.
+        parsed = null;
+      }
+    }
+
     return {
       ...msg,
-      text: result.success ? result.text : null,
+      text: result.success ? (parsed?.text ?? result.text) : null,
+      file_id: parsed?.file_id ?? msg.file_id,
+      file_name: parsed?.file_name ?? msg.file_name,
+      file_type: parsed?.file_type ?? msg.file_type,
+      file_size: parsed?.file_size ?? msg.file_size,
       decryptionFailed: !result.success,
     };
   }, [user.id, getPrivateKey]);
@@ -124,7 +156,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
 
       // Optimistic UI
       const optimistic = {
-        id: `opt_${Date.now()}`,
+        id: generateOptimisticMessageId(),
         from_user_id: user.id,
         to_user_id: recipient.id,
         payload,
@@ -223,7 +255,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         );
 
         const optimistic = {
-          id: `opt_${Date.now()}`,
+          id: generateOptimisticMessageId(),
           from_user_id: user.id,
           to_user_id: recipient.id,
           payload,
@@ -331,9 +363,16 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
     if (!confirmed) return;
 
     try {
-      const deletePromises = Array.from(selectedMessages).map(async (messageId) => {
+      const results = await Promise.all(
+        Array.from(selectedMessages).map(async (messageId) => {
         const message = messages.find(m => m.id === messageId);
-        if (!message) return;
+        if (!message) {
+          return { messageId, success: false };
+        }
+
+        if (isOptimisticId(message.id)) {
+          return { messageId, success: true };
+        }
 
         // Delete associated file if exists
         if (message.file_id) {
@@ -346,14 +385,27 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         }
 
         // Delete the message
-        await deleteMessage(messageId);
-      });
+        try {
+          await deleteMessage(messageId);
+          return { messageId, success: true };
+        } catch (deleteErr) {
+          console.error(`Failed to delete message ${messageId}:`, deleteErr);
+          return { messageId, success: false };
+        }
+      })
+      );
 
-      await Promise.all(deletePromises);
+      const deletedIds = new Set(results.filter(r => r.success).map(r => r.messageId));
+      const failedIds = results.filter(r => !r.success).map(r => r.messageId);
 
-      // Remove from local state
-      setMessages(prev => prev.filter(m => !selectedMessages.has(m.id)));
-      setSelectedMessages(new Set());
+      if (deletedIds.size > 0) {
+        setMessages(prev => prev.filter(m => !deletedIds.has(m.id)));
+      }
+      setSelectedMessages(new Set(failedIds));
+
+      if (failedIds.length > 0) {
+        alert(`Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''}. Please try again.`);
+      }
     } catch (err) {
       console.error('Delete error:', err);
       alert('Failed to delete some messages. Please try again.');
