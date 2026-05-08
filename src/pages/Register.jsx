@@ -336,7 +336,6 @@ export default function Register({ onSwitchToLogin }) {
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', zIndex: 1 }}
           >
-            <img src="/logo.png" alt="WhisperBox" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
             <span style={{ color: '#ffffff', fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '18px', letterSpacing: '-0.3px' }}>
               WhisperBox
             </span>
@@ -403,7 +402,6 @@ export default function Register({ onSwitchToLogin }) {
 
           {/* Mobile logo */}
           <div className="flex md:hidden items-center gap-2 mb-8">
-            <img src="/logo.png" alt="WhisperBox" style={{ width: '32px', height: '32px' }} />
             <span style={{ color: '#fff', fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '18px' }}>WhisperBox</span>
           </div>
 

@@ -65,7 +65,6 @@ export default function ConversationList({ selectedUserId, onSelectUser, onlineU
       <div className="px-4 md:px-6 pt-4 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="WhisperBox" width="32" height="32" />
             <h2 className="font-bold text-base" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               WhisperBox
             </h2>
@@ -159,7 +158,7 @@ export default function ConversationList({ selectedUserId, onSelectUser, onlineU
       </AnimatePresence>
 
       {/* Conversations list */}
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+      <div className="flex-1 overflow-y-auto px-3 md:px-4 py-2 space-y-1">
         {loading ? (
           <div className="flex items-center justify-center h-20">
             <Loader2 size={18} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
@@ -177,11 +176,11 @@ export default function ConversationList({ selectedUserId, onSelectUser, onlineU
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => handleSelectConversation(conv.user_id, conv.display_name, conv.username)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors relative rounded-lg"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors relative rounded-lg"
               style={{
                 background: selectedUserId === conv.user_id ? 'var(--bg-hover)' : 'transparent',
                 borderLeft: selectedUserId === conv.user_id ? '3px solid var(--accent)' : '3px solid transparent',
-                paddingLeft: selectedUserId === conv.user_id ? 'calc(0.75rem - 3px)' : '0.75rem',
+                paddingLeft: selectedUserId === conv.user_id ? 'calc(1rem - 3px)' : '1rem',
               }}
             >
               {/* Avatar */}
