@@ -80,7 +80,7 @@ export default function MessageBubble({ message, isSentByMe, onDownloadFile, isS
         transition={{ duration: 0.2 }}
       >
         <motion.div
-          className="px-5 py-4 rounded-2xl relative cursor-default transition-all"
+          className="px-6 py-4 rounded-2xl relative cursor-default transition-all"
           style={{
             background: isSentByMe ? 'var(--msg-sent)' : 'var(--msg-recv)',
             border: isSentByMe
@@ -138,7 +138,10 @@ export default function MessageBubble({ message, isSentByMe, onDownloadFile, isS
                     >
                       <span className="text-2xl">{getFileIcon(file_type)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                        >
                           {file_name}
                         </p>
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -165,7 +168,15 @@ export default function MessageBubble({ message, isSentByMe, onDownloadFile, isS
 
               {/* Message text */}
               {text && (
-                <p className="text-base leading-6" style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>
+                <p
+                  className="text-base leading-6"
+                  style={{
+                    color: 'var(--text-primary)',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
                   {text}
                 </p>
               )}

@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Lock, ShieldCheck, ChevronDown, Loader2, ArrowLeft, Paperclip, FileUp, Trash2 } from 'lucide-react';
 import { getMessages, sendMessageRest, deleteMessage } from '../api/messages';
 import { deleteFile } from '../api/files';
-import { isReplayAttack } from '../crypto/encrypt';
+import { getUserPublicKey } from '../api/users';
+import { encryptMessage, isReplayAttack } from '../crypto/encrypt';
+import { decryptMessage } from '../crypto/decrypt';
 import { useAuthStore } from '../store/authStore';
 import { useFileTransfer } from '../hooks/useFileTransfer';
 import { groupMessages } from '../utils/messageGrouping';
@@ -41,9 +43,23 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
   const decryptOne = useCallback(async (msg) => {
     const isSentByMe = msg.from_user_id === user.id;
     const result = await decryptMessage(msg.payload, getPrivateKey(), isSentByMe);
+    let parsed = null;
+    if (result.success && result.text) {
+      try {
+        const candidate = JSON.parse(result.text);
+        if (candidate && typeof candidate === 'object') {
+          parsed = candidate;
+        }
+      } catch {}
+    }
+
     return {
       ...msg,
-      text: result.success ? result.text : null,
+      text: result.success ? (parsed?.text ?? result.text) : null,
+      file_id: parsed?.file_id ?? msg.file_id,
+      file_name: parsed?.file_name ?? msg.file_name,
+      file_type: parsed?.file_type ?? msg.file_type,
+      file_size: parsed?.file_size ?? msg.file_size,
       decryptionFailed: !result.success,
     };
   }, [user.id, getPrivateKey]);
@@ -331,9 +347,20 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
     if (!confirmed) return;
 
     try {
+      const deletedIds = new Set();
+      const failedIds = [];
+
       const deletePromises = Array.from(selectedMessages).map(async (messageId) => {
         const message = messages.find(m => m.id === messageId);
-        if (!message) return;
+        if (!message) {
+          deletedIds.add(messageId);
+          return;
+        }
+
+        if (typeof message.id === 'string' && message.id.startsWith('opt_')) {
+          deletedIds.add(messageId);
+          return;
+        }
 
         // Delete associated file if exists
         if (message.file_id) {
@@ -346,14 +373,25 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         }
 
         // Delete the message
-        await deleteMessage(messageId);
+        try {
+          await deleteMessage(messageId);
+          deletedIds.add(messageId);
+        } catch (deleteErr) {
+          failedIds.push(messageId);
+          console.error(`Failed to delete message ${messageId}:`, deleteErr);
+        }
       });
 
       await Promise.all(deletePromises);
 
-      // Remove from local state
-      setMessages(prev => prev.filter(m => !selectedMessages.has(m.id)));
-      setSelectedMessages(new Set());
+      if (deletedIds.size > 0) {
+        setMessages(prev => prev.filter(m => !deletedIds.has(m.id)));
+      }
+      setSelectedMessages(new Set(failedIds));
+
+      if (failedIds.length > 0) {
+        alert(`Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''}. Please try again.`);
+      }
     } catch (err) {
       console.error('Delete error:', err);
       alert('Failed to delete some messages. Please try again.');
