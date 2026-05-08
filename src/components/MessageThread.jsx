@@ -15,6 +15,7 @@ import TypingIndicator from './TypingIndicator';
 import UploadProgress from './UploadProgress';
 
 const OPTIMISTIC_ID_PREFIX = 'opt_';
+const MAX_FAILED_IDS_IN_ALERT = 3;
 
 export default function MessageThread({ recipient, sendMessageWS, isWSConnected, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -394,8 +395,8 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
       setSelectedMessages(new Set(failedIds));
 
       if (failedIds.length > 0) {
-        const failedList = failedIds.slice(0, 3).join(', ');
-        const suffix = failedIds.length > 3 ? ', ...' : '';
+        const failedList = failedIds.slice(0, MAX_FAILED_IDS_IN_ALERT).join(', ');
+        const suffix = failedIds.length > MAX_FAILED_IDS_IN_ALERT ? ', ...' : '';
         alert(
           `Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''} (${failedList}${suffix}). Please try again.`
         );
