@@ -407,7 +407,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         </div>
 
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-          style={{ background: 'var(--green-dim)', border: '1px solid rgba(0,229,160,0.2)' }}>
+          style={{ background: 'var(--green-dim)', border: '1px solid rgba(255,255,255,0.35)' }}>
           <ShieldCheck size={12} style={{ color: 'var(--green)' }} />
           <span className="text-xs font-medium" style={{ color: 'var(--green)' }}>E2EE</span>
         </div>
@@ -442,7 +442,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
             className="flex flex-col items-center justify-center h-full gap-3 py-16"
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--accent-dim)', border: '1px solid rgba(0,212,255,0.2)' }}>
+              style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)' }}>
               <Lock size={22} style={{ color: 'var(--accent)' }} />
             </div>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No messages yet</p>

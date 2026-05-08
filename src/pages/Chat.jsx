@@ -81,8 +81,8 @@ export default function Chat() {
       <div className={`flex-1 h-full overflow-hidden relative ${!showMobileList ? 'flex' : 'hidden md:flex'}`}>
         <AnimatePresence mode="wait">
           {selectedUser ? (
-            <motion.div key={selectedUser.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="w-full h-full">
+            <motion.div key={selectedUser.id} initial={{ opacity: 0, scale: 0.97, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }} transition={{ duration: 0.28, ease: 'easeOut' }} className="w-full h-full">
               <MessageThread recipient={selectedUser} sendMessageWS={sendMessage}
                 isWSConnected={isConnected} onBack={handleBack} />
             </motion.div>
@@ -91,7 +91,7 @@ export default function Chat() {
               className="flex-1 flex flex-col items-center justify-center gap-4"
               style={{ background: 'var(--bg-primary)' }}>
               <div className="w-20 h-20 rounded-full flex items-center justify-center"
-                style={{ background: 'var(--accent-dim)', border: '1px solid rgba(0,212,255,0.15)' }}>
+                style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)' }}>
                 <ShieldCheck size={36} style={{ color: 'var(--accent)' }} />
               </div>
               <div className="text-center">
