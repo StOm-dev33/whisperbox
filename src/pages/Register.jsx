@@ -167,8 +167,8 @@ function getStrength(password) {
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
   if (score <= 1) return { score, label: 'Weak', color: '#ef4444' };
-  if (score <= 2) return { score, label: 'Fair', color: '#f87171' };
-  if (score <= 3) return { score, label: 'Good', color: '#fecaca' };
+  if (score <= 2) return { score, label: 'Fair', color: '#b91c1c' };
+  if (score <= 3) return { score, label: 'Good', color: '#fca5a5' };
   return { score, label: 'Strong', color: '#ffffff' };
 }
 
@@ -345,9 +345,9 @@ export default function Register({ onSwitchToLogin }) {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
             <AnimatePresence mode="wait">
               <motion.div key={slide}
-                initial={{ opacity: 0, scale: 0.94, rotate: -1 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.03, rotate: 1 }}
+                initial={{ opacity: 0, scale: 0.94, y: 18 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 1.02, y: -14 }}
                 transition={{ duration: 0.55, ease: 'easeOut' }}
                 style={{ width: '100%' }}
               >

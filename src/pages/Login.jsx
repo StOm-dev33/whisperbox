@@ -340,9 +340,9 @@ export default function Login({ onSwitchToRegister }) {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
             <AnimatePresence mode="wait">
               <motion.div key={slide}
-                initial={{ opacity: 0, scale: 0.94, rotate: -1 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.03, rotate: 1 }}
+                initial={{ opacity: 0, scale: 0.94, y: 18 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 1.02, y: -14 }}
                 transition={{ duration: 0.55, ease: 'easeOut' }}
                 style={{ width: '100%' }}
               >
