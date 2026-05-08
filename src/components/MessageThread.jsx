@@ -16,7 +16,7 @@ import UploadProgress from './UploadProgress';
 
 const OPTIMISTIC_ID_PREFIX = 'opt_';
 
-function createOptimisticId() {
+function generateOptimisticMessageId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `${OPTIMISTIC_ID_PREFIX}${crypto.randomUUID()}`;
   }
@@ -156,7 +156,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
 
       // Optimistic UI
       const optimistic = {
-        id: createOptimisticId(),
+        id: generateOptimisticMessageId(),
         from_user_id: user.id,
         to_user_id: recipient.id,
         payload,
@@ -255,7 +255,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         );
 
         const optimistic = {
-          id: createOptimisticId(),
+          id: generateOptimisticMessageId(),
           from_user_id: user.id,
           to_user_id: recipient.id,
           payload,
