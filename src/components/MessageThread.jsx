@@ -15,7 +15,17 @@ import TypingIndicator from './TypingIndicator';
 import UploadProgress from './UploadProgress';
 
 const OPTIMISTIC_ID_PREFIX = 'opt_';
-const MAX_FAILED_IDS_IN_ALERT = 3;
+
+function createOptimisticId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${OPTIMISTIC_ID_PREFIX}${crypto.randomUUID()}`;
+  }
+  return `${OPTIMISTIC_ID_PREFIX}${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function isOptimisticId(id) {
+  return typeof id === 'string' && id.startsWith(OPTIMISTIC_ID_PREFIX);
+}
 
 export default function MessageThread({ recipient, sendMessageWS, isWSConnected, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -145,7 +155,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
 
       // Optimistic UI
       const optimistic = {
-        id: `${OPTIMISTIC_ID_PREFIX}${Date.now()}`,
+        id: createOptimisticId(),
         from_user_id: user.id,
         to_user_id: recipient.id,
         payload,
@@ -244,7 +254,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         );
 
         const optimistic = {
-          id: `${OPTIMISTIC_ID_PREFIX}${Date.now()}`,
+          id: createOptimisticId(),
           from_user_id: user.id,
           to_user_id: recipient.id,
           payload,
@@ -362,7 +372,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
           return;
         }
 
-        if (typeof message.id === 'string' && message.id.startsWith(OPTIMISTIC_ID_PREFIX)) {
+        if (isOptimisticId(message.id)) {
           deletedIds.add(messageId);
           return;
         }
@@ -395,11 +405,7 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
       setSelectedMessages(new Set(failedIds));
 
       if (failedIds.length > 0) {
-        const failedList = failedIds.slice(0, MAX_FAILED_IDS_IN_ALERT).join(', ');
-        const suffix = failedIds.length > MAX_FAILED_IDS_IN_ALERT ? ', ...' : '';
-        alert(
-          `Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''} (${failedList}${suffix}). Please try again.`
-        );
+        alert(`Failed to delete ${failedIds.length} message${failedIds.length !== 1 ? 's' : ''}. Please try again.`);
       }
     } catch (err) {
       console.error('Delete error:', err);
