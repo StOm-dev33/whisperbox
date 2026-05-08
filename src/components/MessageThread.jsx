@@ -50,7 +50,9 @@ export default function MessageThread({ recipient, sendMessageWS, isWSConnected,
         if (candidate && typeof candidate === 'object') {
           parsed = candidate;
         }
-      } catch {}
+      } catch {
+        parsed = null;
+      }
     }
 
     return {
