@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
-import { login } from '../api/auth';
-import { restoreKeysFromLogin } from '../crypto/keyManager';
+import { register } from '../api/auth';
+import { setupKeysForRegister } from '../crypto/keyManager';
 import { useAuthStore } from '../store/authStore';
 
 function useWindowSize() {
@@ -355,9 +355,9 @@ const slides = [
   },
 ];
 
-// ─── Main Login Component ─────────────────────────────────────────────────────
+// ─── Main Register Component ──────────────────────────────────────────────────
 
-export default function Login({ onSwitchToRegister }) {
+export default function Register({ onSwitchToLogin }) {
   const [form, setForm] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -382,14 +382,18 @@ export default function Login({ onSwitchToRegister }) {
     }
     setLoading(true);
     try {
-      const data = await login(form.username.trim(), form.password);
+      const keySetup = await setupKeysForRegister(form.password);
+      const data = await register({
+        username: form.username.trim(),
+        password: form.password,
+        wrapped_private_key: keySetup.wrapped_private_key,
+        pbkdf2_salt: keySetup.pbkdf2_salt,
+        public_key: keySetup.public_key,
+      });
       const { user } = data;
-      const { privateKey, publicKey } = await restoreKeysFromLogin(
-        form.password, user.wrapped_private_key, user.pbkdf2_salt, user.public_key
-      );
-      setSession(user, privateKey, publicKey);
+      setSession(user, keySetup.privateKey, keySetup.publicKey);
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -550,16 +554,16 @@ export default function Login({ onSwitchToRegister }) {
               color: '#ffffff', fontFamily: "'Syne', sans-serif",
               fontWeight: 700, fontSize: '28px', margin: '0 0 6px', letterSpacing: '-0.5px',
             }}>
-              Welcome back
+              Create account
             </h2>
             <p style={{ color: 'rgba(255,210,210,0.85)', fontSize: '14px', margin: '0 0 32px' }}>
-              Don't have an account?{' '}
-              <button onClick={onSwitchToRegister} style={{
+              Already have an account?{' '}
+              <button onClick={onSwitchToLogin} style={{
                 color: '#3b82f6', background: 'none', border: 'none',
                 cursor: 'pointer', fontWeight: 600, fontSize: '14px', padding: 0,
                 fontFamily: 'inherit',
               }}>
-                Sign up
+                Sign in
               </button>
             </p>
 
@@ -610,7 +614,7 @@ export default function Login({ onSwitchToRegister }) {
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showPassword ? 'text' : 'password'} value={form.password}
-                    placeholder="••••••••" autoComplete="current-password" disabled={loading}
+                    placeholder="••••••••" autoComplete="new-password" disabled={loading}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                     style={{ ...inputStyle, paddingRight: '48px' }}
                     onFocus={e => { e.target.style.border = '1px solid rgba(220,38,38,0.8)'; e.target.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.15)'; e.target.style.background = 'rgba(255,255,255,0.07)'; }}
@@ -643,8 +647,8 @@ export default function Login({ onSwitchToRegister }) {
                 }}
               >
                 {loading ? (
-                  <><Loader2 size={16} className="animate-spin" /> Restoring session...</>
-                ) : 'Sign in'}
+                  <><Loader2 size={16} className="animate-spin" /> Creating account...</>
+                ) : 'Sign up'}
               </motion.button>
             </form>
 
